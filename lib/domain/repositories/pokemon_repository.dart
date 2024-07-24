@@ -5,7 +5,7 @@ import '../../domain/entities/pokemon.dart';
 abstract class PokemonRepository {
   Future<List<Pokemon>> getAllPokemons();
   Future<PokemonDetails> getPokemonDetails(String id);
-  Future<void> saveFavoritePokemon(Pokemon pokemon);
-  Future<void> removeFavoritePokemon(Pokemon pokemon);
+  void saveFavoritePokemon(Pokemon pokemon);
+  void removeFavoritePokemon(Pokemon pokemon);
   List<String> getFavoritePokemons();
 }

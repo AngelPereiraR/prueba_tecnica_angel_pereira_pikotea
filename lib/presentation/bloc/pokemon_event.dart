@@ -24,8 +24,9 @@ class FilterFavorites extends PokemonEvent {
 
 class ToggleFavorite extends PokemonEvent {
   final String pokemonId;
+  final String from;
 
-  ToggleFavorite(this.pokemonId);
+  ToggleFavorite(this.pokemonId, this.from);
 
   @override
   List<Object> get props => [pokemonId];

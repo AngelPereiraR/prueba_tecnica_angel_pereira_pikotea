@@ -25,12 +25,14 @@ class PokemonDetailsModel {
         : 'Unknown';
 
     return PokemonDetailsModel(
-        id: json['id'] as int,
-        name: json['name'] as String,
-        sprites: json['sprites']['front_default'] as String,
-        abilities: abilities,
-        game: game,
-        isFavorite: false);
+      id: json['id'] as int,
+      name: json['name'] as String,
+      sprites: json['sprites']['front_default'] as String,
+      abilities: abilities,
+      game: game,
+      isFavorite:
+          json['isFavorite'] != null ? json['isFavorite'] as bool : false,
+    );
   }
 
   Map<String, dynamic> toJson() {

@@ -31,7 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const Text('Lista de Pokemon'),
         leading: Container(
-          margin: EdgeInsets.all(10),
+          margin: const EdgeInsets.all(10),
           child: Image.asset(
             'assets/pokeball.png',
             width: 30,
@@ -88,25 +88,27 @@ class _HomeScreenState extends State<HomeScreen> {
                             .add(LoadPokemonDetails(pokemon.name));
                         context.push('/pokemon/${pokemon.name}');
                       },
-                      trailing: IconButton(
-                        onPressed: () {
-                          setState(() {
-                            pokemon.isFavorite = !pokemon.isFavorite;
-                            BlocProvider.of<PokemonBloc>(context)
-                                .add(FilterFavorites(isSelected));
-                          });
-                        },
-                        icon: pokemon.isFavorite
-                            ? const Icon(
-                                Icons.star_rounded,
-                              )
-                            : const Icon(
-                                Icons.star_border_rounded,
-                              ),
-                        tooltip: pokemon.isFavorite
-                            ? 'Quitar de favoritos'
-                            : 'Añadir a favoritos',
-                      ),
+                      trailing: !isSelected
+                          ? IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  pokemon.isFavorite = !pokemon.isFavorite;
+                                  BlocProvider.of<PokemonBloc>(context).add(
+                                      ToggleFavorite(pokemon.name, 'home'));
+                                });
+                              },
+                              icon: pokemon.isFavorite
+                                  ? const Icon(
+                                      Icons.star_rounded,
+                                    )
+                                  : const Icon(
+                                      Icons.star_border_rounded,
+                                    ),
+                              tooltip: pokemon.isFavorite
+                                  ? 'Quitar de favoritos'
+                                  : 'Añadir a favoritos',
+                            )
+                          : null,
                     ),
                     const Divider(
                       height: 5,

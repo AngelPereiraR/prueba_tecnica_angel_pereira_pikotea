@@ -95,8 +95,8 @@ class _PokemonDetailsScreenState extends State<PokemonDetailsScreen> {
                             onPressed: () {
                               setState(() {
                                 pokemon.isFavorite = !pokemon.isFavorite;
-                                BlocProvider.of<PokemonBloc>(context)
-                                    .add(ToggleFavorite(pokemon.name));
+                                BlocProvider.of<PokemonBloc>(context).add(
+                                    ToggleFavorite(pokemon.name, 'details'));
                               });
                             },
                             icon: pokemon.isFavorite

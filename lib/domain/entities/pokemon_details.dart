@@ -6,11 +6,12 @@ class PokemonDetails {
   final String game;
   bool isFavorite;
 
-  PokemonDetails(
-      {required this.id,
-      required this.name,
-      required this.sprites,
-      required this.abilities,
-      required this.game,
-      required this.isFavorite});
+  PokemonDetails({
+    required this.id,
+    required this.name,
+    required this.sprites,
+    required this.abilities,
+    required this.game,
+    required this.isFavorite,
+  });
 }

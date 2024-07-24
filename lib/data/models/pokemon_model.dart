@@ -13,7 +13,8 @@ class PokemonModel {
     return PokemonModel(
       name: json['name'] as String,
       url: json['url'] as String,
-      isFavorite: false,
+      isFavorite:
+          json['isFavorite'] != null ? json['isFavorite'] as bool : false,
     );
   }
 

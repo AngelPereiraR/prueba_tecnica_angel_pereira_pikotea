@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:prueba_tecnica_angel_pereira_pikotea/config/config.dart';
 import 'package:prueba_tecnica_angel_pereira_pikotea/config/router/app_router.dart';
+import 'package:prueba_tecnica_angel_pereira_pikotea/domain/usecases/get_favorite_pokemons.dart';
+import 'package:prueba_tecnica_angel_pereira_pikotea/domain/usecases/remove_favorite_pokemon.dart';
+import 'package:prueba_tecnica_angel_pereira_pikotea/domain/usecases/save_favorite_pokemon.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'data/datasources/pokemon_local_datasource.dart';
@@ -38,9 +41,12 @@ class MyApp extends StatelessWidget {
       providers: [
         BlocProvider(
           create: (_) => PokemonBloc(
-            getAllPokemons: GetAllPokemons(repository!),
-            getPokemonDetails: GetPokemonDetails(repository!),
-          )..add(LoadPokemons()),
+              getAllPokemons: GetAllPokemons(repository!),
+              getPokemonDetails: GetPokemonDetails(repository!),
+              getFavoritePokemons: GetFavoritePokemons(repository!),
+              removeFavoritePokemon: RemoveFavoritePokemon(repository!),
+              saveFavoritePokemon: SaveFavoritePokemon(repository!))
+            ..add(LoadPokemons()),
         ),
       ],
       child: MaterialApp.router(

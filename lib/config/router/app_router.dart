@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../presentation/classes/pokemon.dart';
 import '../../presentation/screens/screens.dart';
 
 // Clave necesaria para que cuando se actualice el provider, se inicie un nuevo widget
@@ -27,9 +26,8 @@ final appRouter = GoRouter(
         path: '/pokemon/:id',
         name: PokemonDetailsScreen.name,
         builder: (context, state) {
-          final pokemonId = int.parse(state.pathParameters['id'] ?? '0');
-          final pokemon = state.extra as Pokemon;
-          return PokemonDetailsScreen(id: pokemonId, pokemon: pokemon);
+          final pokemonId = state.pathParameters['id'] ?? '0';
+          return PokemonDetailsScreen(id: pokemonId);
         },
       ),
     ]);

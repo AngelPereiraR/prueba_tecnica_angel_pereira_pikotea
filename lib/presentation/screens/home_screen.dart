@@ -1,20 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../classes/pokemon.dart';
-
-// Lista inicial de los pokemons (Solo se mantendrá mientras no esté realizada la implementación de la API)
-List<Pokemon> originalPokemons = [
-  Pokemon(id: 1, name: 'Bulbasaur', isFavorite: true),
-  Pokemon(id: 2, name: 'Ivysaur', isFavorite: false),
-  Pokemon(id: 3, name: 'Venusaur', isFavorite: false),
-  Pokemon(id: 4, name: 'Charmander', isFavorite: true),
-  Pokemon(id: 5, name: 'Charmeleon', isFavorite: true),
-  Pokemon(id: 6, name: 'Charizard', isFavorite: false),
-];
-
-// Lista de los pokemons mostrados (Solo se mantendrá mientras no esté realizada la implementación de la API)
-List<Pokemon> displayedPokemons = [];
+import '../bloc/pokemon_bloc.dart';
+import '../bloc/pokemon_event.dart';
+import '../bloc/pokemon_state.dart';
 
 class HomeScreen extends StatefulWidget {
   static const name = 'home-screen';
@@ -25,24 +15,26 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // Verificar si el botón para mostrar solo los pokemons favoritos está seleccionado o no
-  bool isSelected = false;
+  @override
+  void initState() {
+    super.initState();
+    _loadPokemons();
+  }
+
+  void _loadPokemons() {
+    context.read<PokemonBloc>().add(LoadPokemons());
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Asignación de los pokemons mostrados dependiendo si el botón para mostrar solo los pokemons favoritos está seleccionado o no
-    displayedPokemons = isSelected
-        ? originalPokemons.where((pokemon) => pokemon.isFavorite).toList()
-        : originalPokemons;
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Lista de Pokemon'),
         leading: Container(
-          margin: const EdgeInsets.only(left: 15),
+          margin: EdgeInsets.all(10),
           child: Image.asset(
             'assets/pokeball.png',
-            fit: BoxFit.contain,
+            width: 30,
           ),
         ),
         actions: [
@@ -60,11 +52,8 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () {
               setState(() {
                 isSelected = !isSelected;
-                displayedPokemons = isSelected
-                    ? originalPokemons
-                        .where((pokemon) => pokemon.isFavorite)
-                        .toList()
-                    : originalPokemons;
+                BlocProvider.of<PokemonBloc>(context)
+                    .add(FilterFavorites(isSelected));
               });
             },
             icon: isSelected
@@ -77,59 +66,60 @@ class _HomeScreenState extends State<HomeScreen> {
             tooltip: isSelected
                 ? 'Mostrar todos los pokemons'
                 : 'Mostrar sólo los pokemons favoritos',
-          )
+          ),
         ],
       ),
-      body: ListView.builder(
-        itemCount: displayedPokemons.length,
-        itemBuilder: (context, index) {
-          final pokemon = displayedPokemons[index];
-          return Column(
-            children: [
-              ListTile(
-                title: Row(
+      body: BlocBuilder<PokemonBloc, PokemonState>(
+        builder: (context, state) {
+          if (state is PokemonLoading) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (state is PokemonLoaded) {
+            return ListView.builder(
+              itemCount: state.pokemons.length,
+              itemBuilder: (context, index) {
+                final pokemon = state.pokemons[index];
+                return Column(
                   children: [
-                    Image.asset(
-                      'assets/pokeball.png',
-                      width: 100,
-                      height: 100,
-                      fit: BoxFit.contain,
+                    ListTile(
+                      title: Text(pokemon.name),
+                      onTap: () {
+                        context
+                            .read<PokemonBloc>()
+                            .add(LoadPokemonDetails(pokemon.name));
+                        context.push('/pokemon/${pokemon.name}');
+                      },
+                      trailing: IconButton(
+                        onPressed: () {
+                          setState(() {
+                            pokemon.isFavorite = !pokemon.isFavorite;
+                            BlocProvider.of<PokemonBloc>(context)
+                                .add(FilterFavorites(isSelected));
+                          });
+                        },
+                        icon: pokemon.isFavorite
+                            ? const Icon(
+                                Icons.star_rounded,
+                              )
+                            : const Icon(
+                                Icons.star_border_rounded,
+                              ),
+                        tooltip: pokemon.isFavorite
+                            ? 'Quitar de favoritos'
+                            : 'Añadir a favoritos',
+                      ),
                     ),
-                    const SizedBox(
-                      width: 20,
+                    const Divider(
+                      height: 5,
+                      thickness: 3,
                     ),
-                    Text(pokemon.name)
                   ],
-                ),
-                trailing: IconButton(
-                  onPressed: () {
-                    setState(() {
-                      pokemon.isFavorite = !pokemon.isFavorite;
-                    });
-                  },
-                  icon: pokemon.isFavorite
-                      ? const Icon(
-                          Icons.star_rounded,
-                          size: 40,
-                        )
-                      : const Icon(
-                          Icons.star_border_rounded,
-                          size: 40,
-                        ),
-                  tooltip: isSelected
-                      ? 'Desmarcar como favorito'
-                      : 'Marcar como favorito',
-                ),
-                onTap: () {
-                  context.push('/pokemon/${pokemon.id}', extra: pokemon);
-                },
-              ),
-              const Divider(
-                height: 5,
-                thickness: 3,
-              )
-            ],
-          );
+                );
+              },
+            );
+          } else if (state is PokemonError) {
+            return Center(child: Text(state.message));
+          }
+          return Container();
         },
       ),
     );
@@ -172,37 +162,38 @@ class PokemonSearchDelegate extends SearchDelegate<String> {
   // Recuperación de los resultados tras la búsqueda
   @override
   Widget buildResults(BuildContext context) {
-    final results = displayedPokemons.where(
-        (pokemon) => pokemon.name.toLowerCase().contains(query.toLowerCase()));
-    return ListView(
-      children: results
-          .expand((pokemon) => [
-                ListTile(
-                  title: Row(
-                    children: [
-                      Image.asset(
-                        'assets/pokeball.png',
-                        width: 100,
-                        height: 100,
-                        fit: BoxFit.contain,
+    return BlocBuilder<PokemonBloc, PokemonState>(
+      builder: (context, state) {
+        if (state is PokemonLoading) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (state is PokemonLoaded) {
+          final results = state.pokemons.where((pokemon) =>
+              pokemon.name.toLowerCase().contains(query.toLowerCase()));
+          return ListView(
+            children: results
+                .expand((pokemon) => [
+                      ListTile(
+                        title: Text(pokemon.name),
+                        onTap: () {
+                          context
+                              .read<PokemonBloc>()
+                              .add(LoadPokemonDetails(pokemon.name));
+                          context.push('/pokemon/${pokemon.name}');
+                          close(context, pokemon.name);
+                        },
                       ),
-                      const SizedBox(
-                        width: 20,
+                      const Divider(
+                        height: 5,
+                        thickness: 3,
                       ),
-                      Text(pokemon.name)
-                    ],
-                  ),
-                  onTap: () {
-                    context.push('/pokemon/${pokemon.id}', extra: pokemon);
-                    close(context, pokemon.name);
-                  },
-                ),
-                const Divider(
-                  height: 5,
-                  thickness: 3,
-                ),
-              ])
-          .toList(),
+                    ])
+                .toList(),
+          );
+        } else if (state is PokemonError) {
+          return Center(child: Text(state.message));
+        }
+        return Container();
+      },
     );
   }
 
@@ -212,37 +203,38 @@ class PokemonSearchDelegate extends SearchDelegate<String> {
     if (query.isEmpty) {
       return Container();
     }
-    final suggestions = displayedPokemons.where((pokemon) =>
-        pokemon.name.toLowerCase().startsWith(query.toLowerCase()));
-    return ListView(
-      children: suggestions
-          .expand((pokemon) => [
-                ListTile(
-                  title: Row(
-                    children: [
-                      Image.asset(
-                        'assets/pokeball.png',
-                        width: 100,
-                        height: 100,
-                        fit: BoxFit.contain,
+    return BlocBuilder<PokemonBloc, PokemonState>(
+      builder: (context, state) {
+        if (state is PokemonLoading) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (state is PokemonLoaded) {
+          final suggestions = state.pokemons.where((pokemon) =>
+              pokemon.name.toLowerCase().startsWith(query.toLowerCase()));
+          return ListView(
+            children: suggestions
+                .expand((pokemon) => [
+                      ListTile(
+                        title: Text(pokemon.name),
+                        onTap: () {
+                          context
+                              .read<PokemonBloc>()
+                              .add(LoadPokemonDetails(pokemon.name));
+                          context.push('/pokemon/${pokemon.name}');
+                          close(context, pokemon.name);
+                        },
                       ),
-                      const SizedBox(
-                        width: 20,
+                      const Divider(
+                        height: 5,
+                        thickness: 3,
                       ),
-                      Text(pokemon.name)
-                    ],
-                  ),
-                  onTap: () {
-                    context.push('/pokemon/${pokemon.id}', extra: pokemon);
-                    close(context, pokemon.name);
-                  },
-                ),
-                const Divider(
-                  height: 5,
-                  thickness: 3,
-                ),
-              ])
-          .toList(),
+                    ])
+                .toList(),
+          );
+        } else if (state is PokemonError) {
+          return Center(child: Text(state.message));
+        }
+        return Container();
+      },
     );
   }
 

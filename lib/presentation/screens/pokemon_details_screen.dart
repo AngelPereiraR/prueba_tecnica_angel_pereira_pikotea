@@ -32,7 +32,11 @@ class _PokemonDetailsScreenState extends State<PokemonDetailsScreen> {
         body: BlocBuilder<PokemonBloc, PokemonState>(
           builder: (context, state) {
             if (state is PokemonLoading) {
-              return const Center(child: CircularProgressIndicator());
+              return const Center(
+                  child: CircularProgressIndicator(
+                strokeWidth: 5,
+                color: Colors.white,
+              ));
             } else if (state is PokemonDetailsLoaded) {
               final pokemon = state.pokemon;
               return Padding(

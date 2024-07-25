@@ -34,6 +34,7 @@ class PokemonBloc extends Bloc<PokemonEvent, PokemonState> {
       emit(PokemonLoading());
       try {
         if (_allPokemons.isEmpty) {
+          // Se obtienen todos los pokemons
           _allPokemons = await getAllPokemons();
         }
         emit(PokemonLoaded(pokemons: _allPokemons, showFavorites: false));
@@ -45,9 +46,12 @@ class PokemonBloc extends Bloc<PokemonEvent, PokemonState> {
     on<LoadPokemonDetails>((event, emit) async {
       emit(PokemonLoading());
       try {
+        // Se obtiene el pokemon cuyo nombre sea igual al id pasado que tiene el isFavorite
         final pokemonWithFavorite =
             _allPokemons.firstWhere((pokemon) => pokemon.name == event.id);
+        // Se obtiene el pokemon original de la API sin el isFavorite
         final originalPokemon = await getPokemonDetails(event.id);
+        // Se asigna el isFavorite del pokemon local al pokemon original
         originalPokemon.isFavorite = pokemonWithFavorite.isFavorite;
         emit(PokemonDetailsLoaded(pokemon: originalPokemon));
       } catch (e) {
@@ -60,6 +64,7 @@ class PokemonBloc extends Bloc<PokemonEvent, PokemonState> {
       dynamic filteredStringPokemons = [];
       List<Pokemon> filteredPokemons = [];
       if (event.showFavorites) {
+        // Se obtienen los pokemons favoritos del local storage
         filteredStringPokemons = getFavoritePokemons();
 
         // Decodifica el string JSON
@@ -79,42 +84,43 @@ class PokemonBloc extends Bloc<PokemonEvent, PokemonState> {
     on<ToggleFavorite>((event, emit) async {
       emit(PokemonLoading());
       try {
+        // Se obtiene el pokemon cuyo nombre sea igual al pokemonId pasado que tiene el isFavorite
         Pokemon pokemonWithFavorite = _allPokemons
             .firstWhere((pokemon) => pokemon.name == event.pokemonId);
 
+        // Si el evento proviene de la pantalla de detalles se asigna el contrario de isFavorite
         if (event.from == "details") {
           pokemonWithFavorite.isFavorite = !pokemonWithFavorite.isFavorite;
         }
 
-        // print(pokemonWithFavorite.toString());
-
         if (pokemonWithFavorite.isFavorite) {
+          // Se guarda localmente el pokemon favorito
           await saveFavoritePokemon(pokemonWithFavorite);
-          pokemonWithFavorite.isFavorite = false;
+          pokemonWithFavorite.isFavorite = !pokemonWithFavorite.isFavorite;
         } else {
           pokemonWithFavorite.isFavorite = !pokemonWithFavorite.isFavorite;
+          // Se elimina localmente el pokemon favorito
           await removeFavoritePokemon(pokemonWithFavorite);
         }
-
-        // if (event.from == "home") {
-        //   pokemonWithFavorite.isFavorite = !pokemonWithFavorite.isFavorite;
-        // }
       } catch (e) {
         emit(PokemonError(message: e.toString()));
       }
+      // Se obtiene el pokemon cuyo nombre sea igual al pokemonId pasado que tiene el isFavorite
       final pokemon =
           _allPokemons.firstWhere((pokemon) => pokemon.name == event.pokemonId);
+      // Se asigna el contrario de isFavorite
       pokemon.isFavorite = !pokemon.isFavorite;
 
+      // Se busca el pokemon que coincide en nombre y se asigna el contrario de su isFavorite
       _allPokemons.map((pokemonOriginal) {
         if (pokemonOriginal.name == pokemon.name) {
           pokemonOriginal.isFavorite = !pokemonOriginal.isFavorite;
         }
       });
 
-      // Emit the updated state
       emit(PokemonLoaded(pokemons: _allPokemons, showFavorites: false));
 
+      // Si el evento proviene de la pantalla detalles se vuelven a obtener los detalles de ese pokemon y se asigna su isFavorite correspondiente
       if (event.from == "details") {
         try {
           final pokemonWithFavorite = _allPokemons

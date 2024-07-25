@@ -15,9 +15,11 @@ import 'domain/usecases/get_pokemon_details.dart';
 import 'presentation/bloc/pokemon_bloc.dart';
 import 'presentation/bloc/pokemon_event.dart';
 
+// Inicialización de todas las instancias
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final sharedPreferences = await SharedPreferences.getInstance();
+  await Environment.initEnvironment();
 
   final remoteDataSource = PokemonRemoteDataSource();
   final localDataSource =
@@ -38,6 +40,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
+      // Inicialización de todos los BloCs
       providers: [
         BlocProvider(
           create: (_) => PokemonBloc(
@@ -49,6 +52,7 @@ class MyApp extends StatelessWidget {
             ..add(LoadPokemons()),
         ),
       ],
+      // Inicialización de la app
       child: MaterialApp.router(
         routerConfig: appRouter,
         debugShowCheckedModeBanner: false,

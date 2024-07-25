@@ -14,10 +14,6 @@ final appRouter = GoRouter(
     navigatorKey: navigatorKey,
     routes: [
       GoRoute(
-        path: '/splash',
-        builder: (context, state) => const SplashScreen(),
-      ),
-      GoRoute(
         path: '/',
         name: HomeScreen.name,
         builder: (context, state) => const HomeScreen(),

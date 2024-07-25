@@ -15,6 +15,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  // Se realiza una carga inicial de todos los pokemons
   @override
   void initState() {
     super.initState();
@@ -31,10 +32,9 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const Text('Lista de Pokemon'),
         leading: Container(
-          margin: const EdgeInsets.all(10),
+          margin: const EdgeInsets.all(12),
           child: Image.asset(
             'assets/pokeball.png',
-            width: 30,
           ),
         ),
         actions: [
@@ -72,7 +72,11 @@ class _HomeScreenState extends State<HomeScreen> {
       body: BlocBuilder<PokemonBloc, PokemonState>(
         builder: (context, state) {
           if (state is PokemonLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+                child: CircularProgressIndicator(
+              strokeWidth: 5,
+              color: Colors.white,
+            ));
           } else if (state is PokemonLoaded) {
             return ListView.builder(
               itemCount: state.pokemons.length,
@@ -208,7 +212,11 @@ class PokemonSearchDelegate extends SearchDelegate<String> {
     return BlocBuilder<PokemonBloc, PokemonState>(
       builder: (context, state) {
         if (state is PokemonLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(
+              child: CircularProgressIndicator(
+            strokeWidth: 5,
+            color: Colors.white,
+          ));
         } else if (state is PokemonLoaded) {
           final suggestions = state.pokemons.where((pokemon) =>
               pokemon.name.toLowerCase().startsWith(query.toLowerCase()));

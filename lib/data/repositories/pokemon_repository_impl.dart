@@ -9,6 +9,7 @@ import '../../domain/entities/pokemon.dart';
 import '../../domain/repositories/pokemon_repository.dart';
 import '../models/pokemon_model.dart';
 
+// Implementaciones de los métodos del repositorio
 class PokemonRepositoryImpl implements PokemonRepository {
   final PokemonRemoteDataSource remoteDataSource;
   final PokemonLocalDataSource localDataSource;
@@ -50,8 +51,8 @@ class PokemonRepositoryImpl implements PokemonRepository {
   }
 
   @override
-  Future<PokemonDetails> getPokemonDetails(String id) async {
-    final model = await remoteDataSource.getPokemonDetails(id);
+  Future<PokemonDetails> getPokemonDetails(String pokemonName) async {
+    final model = await remoteDataSource.getPokemonDetails(pokemonName);
     return PokemonMapper.fromDetailsModel(model);
   }
 
